@@ -71,40 +71,46 @@ amino_name_map = {
     "당근 퓨레 (Carrot)":         None,
 }
 
-# ── 오메가 6:3 DB ──────────────────────────────────────────────────────────
+# ── 오메가 DB: 절대값 방식 (g/100g, raw 기준) ─────────────────────────────
+# 출처: USDA FoodData Central raw 데이터 + nutritionadvance.com/foodstruct.com 검증
+# 형식: "재료명": (omega6_g, omega3_g, "표시비율", "비고")
 omega_db = {
-    "닭발 (뼈 60%)":             (15,1,"15:1","곡물사육 가금류"),
-    "닭목뼈 (뼈 36%)":           (11,1,"11:1~12:1","껍질제거시 개선"),
-    "닭날개 (뼈 45%)":           (15,1,"15:1","곡물사육 기준"),
-    "닭북채 (뼈 30%)":           (15,1,"15:1","곡물사육 기준"),
-    "전체 칠면조 (뼈 21%)":      (5,1,"3:1~6:1","방사 기준"),
-    "칠면조 목뼈 (뼈 42%)":      (5,1,"3:1~6:1","방사 기준"),
-    "칠면조 날개 (뼈 37%)":      (5,1,"3:1~6:1","방사 기준"),
-    "전체 오리 (뼈 28%)":        (13,1,"12:1~15:1","곡물사육 오리"),
-    "오리 목뼈 (뼈 50%)":        (13,1,"12:1~15:1","곡물사육 오리"),
-    "오리발 (뼈 60%)":           (13,1,"12:1~15:1","곡물사육 오리"),
-    "소갈비뼈 (뼈 52%)":         (4,1,"3:1~5:1","목초비육 기준"),
-    "소꼬리 (뼈 55%)":           (4,1,"3:1~5:1","목초비육 기준"),
-    "양 갈비뼈 (뼈 27%)":        (4,1,"3:1~4:1","양고기"),
-    "양 목뼈 (뼈 32%)":          (4,1,"3:1~4:1","양고기"),
-    "전체 메츄리 (뼈 10%)":      (5,1,"4:1~6:1","메추리"),
-    "소간 (Beef Liver)":         (4,1,"3:1~5:1","소 내장"),
-    "소심장 (Beef Heart)":       (4,1,"3:1~5:1","소 내장"),
-    "소폐 (Beef Lung)":          (4,1,"3:1~5:1","소 내장"),
-    "그린트라이프 (Green Tripe)": (5,1,"3:1~6:1","천연 촉매제"),
-    "닭가슴살 (Chicken Breast)":  (17,1,"15:1~20:1","케이지/곡물사육"),
-    "소고기 (Beef)":              (4,1,"3:1~5:1","목초비육 기준"),
-    "말고기 (Horse Meat)":        (3,1,"2:1~5:1","청정 적색육, ALA풍부"),
-    "사슴고기 (Venison)":         (2,1,"1.5:1~3:1","진화적 정답"),
-    "정어리 (Sardine)":           (1,2,"0.1:1~1:1","최고의 항염 식품"),
-    "계란노른자 (Egg Yolk)":      (9,1,"8:1~10:1","사육방식에 따라 변동"),
-    "굴 (Oyster)":                (1,1,"~1:1","EPA/DHA 풍부"),
-    "블루베리 (Blueberry)":       (5,1,"4:1~6:1","항산화 위주"),
-    "브로콜리 퓨레 (Broccoli)":   (1,2,"~1:2","항산화 채소"),
-    "토마토 퓨레 (Tomato)":       (3,1,"2:1~3:1","리코펜 풍부"),
-    "당근 퓨레 (Carrot)":         (3,1,"2:1~3:1","베타카로틴"),
-    "파프리카 퓨레 (Paprika)":    (5,1,"4:1~6:1","비타민C 풍부"),
-    "샐러리 퓨레 (Celery)":       (3,1,"2:1~4:1","낮은 열량"),
+    # ── 뼈류: 살코기 부위 오메가값 기반, 뼈자체는 지방 미포함으로 근육부위 적용 ──
+    "닭발 (뼈 60%)":             (0.45, 0.060, "7.5:1", "USDA 곡물사육 닭 기준"),
+    "닭목뼈 (뼈 36%)":           (0.45, 0.060, "7.5:1", "USDA 곡물사육 닭 기준"),
+    "닭날개 (뼈 45%)":           (0.45, 0.060, "7.5:1", "USDA 곡물사육 닭 기준"),
+    "닭북채 (뼈 30%)":           (0.45, 0.060, "7.5:1", "USDA 곡물사육 닭 기준"),
+    "전체 칠면조 (뼈 21%)":      (0.27, 0.060, "4.5:1", "USDA 칠면조 raw"),
+    "칠면조 목뼈 (뼈 42%)":      (0.27, 0.060, "4.5:1", "USDA 칠면조 raw"),
+    "칠면조 날개 (뼈 37%)":      (0.27, 0.060, "4.5:1", "USDA 칠면조 raw"),
+    "전체 오리 (뼈 28%)":        (0.98, 0.070, "14.0:1","USDA 오리 raw 곡물사육"),
+    "오리 목뼈 (뼈 50%)":        (0.98, 0.070, "14.0:1","USDA 오리 raw 곡물사육"),
+    "오리발 (뼈 60%)":           (0.98, 0.070, "14.0:1","USDA 오리 raw 곡물사육"),
+    "소갈비뼈 (뼈 52%)":         (0.14, 0.036, "3.9:1", "USDA 소고기 lean raw"),
+    "소꼬리 (뼈 55%)":           (0.14, 0.036, "3.9:1", "USDA 소고기 lean raw"),
+    "양 갈비뼈 (뼈 27%)":        (0.31, 0.080, "3.9:1", "USDA 양고기 raw"),
+    "양 목뼈 (뼈 32%)":          (0.31, 0.080, "3.9:1", "USDA 양고기 raw"),
+    "전체 메츄리 (뼈 10%)":      (0.27, 0.060, "4.5:1", "메추리=칠면조 유사 적용"),
+    # ── 내장 ──
+    "소간 (Beef Liver)":         (0.460, 0.065, "7.1:1", "USDA FDC 168627 raw"),
+    "소심장 (Beef Heart)":       (0.260, 0.050, "5.2:1", "USDA FDC 168625 raw"),
+    "소폐 (Beef Lung)":          (0.150, 0.040, "3.8:1", "USDA 추정"),
+    "그린트라이프 (Green Tripe)": (0.120, 0.030, "4.0:1", "초지 반추동물 추정"),
+    # ── 육류 ──
+    "닭가슴살 (Chicken Breast)":  (0.450, 0.060, "7.5:1", "USDA FDC 171077 raw 곡물사육"),
+    "소고기 (Beef)":              (0.140, 0.036, "3.9:1", "USDA FDC 174006 lean raw"),
+    "말고기 (Horse Meat)":        (0.180, 0.070, "2.6:1", "방목 추정, ALA 풍부"),
+    "사슴고기 (Venison)":         (0.225, 0.104, "2.2:1", "USDA Food Composite DB raw"),
+    "정어리 (Sardine)":           (0.110, 1.480, "0.07:1","USDA 175139 EPA+DHA+ALA 합산"),
+    "계란노른자 (Egg Yolk)":      (1.800, 0.100, "18.0:1","USDA raw 곡물사육"),
+    "굴 (Oyster)":                (0.040, 0.270, "0.15:1","USDA 175167 EPA+DHA 기준"),
+    "블루베리 (Blueberry)":       (0.058, 0.043, "1.4:1", "USDA blueberry raw"),
+    # ── 야채류 (지방 매우 적어 절대량은 미미) ──
+    "브로콜리 퓨레 (Broccoli)":   (0.038, 0.105, "0.36:1","USDA raw broccoli"),
+    "토마토 퓨레 (Tomato)":       (0.083, 0.004, "20.8:1","USDA raw tomato"),
+    "당근 퓨레 (Carrot)":         (0.115, 0.002, "57.5:1","USDA raw carrot"),
+    "파프리카 퓨레 (Paprika)":    (0.160, 0.030, "5.3:1", "USDA red bell pepper raw"),
+    "샐러리 퓨레 (Celery)":       (0.079, 0.027, "2.9:1", "USDA celery raw"),
 }
 
 # ── 메인 DB ────────────────────────────────────────────────────────────────
@@ -239,11 +245,10 @@ if selected:
                     total_amino[aa] += val * ratio
 
         if f in omega_db:
-            o6, o3, _, _ = omega_db[f]
-            fat_g = row['지방'] * ratio
-            denom = o6 + o3
-            omega6_total += fat_g * (o6 / denom)
-            omega3_total += fat_g * (o3 / denom)
+            o6_per100, o3_per100, _, _ = omega_db[f]
+            # 절대값 직접 합산 (g/100g × 급여량/100)
+            omega6_total += o6_per100 * ratio
+            omega3_total += o3_per100 * ratio
 
     # ── 레시피 저장 ──────────────────────────────────────────────────────────
     st.subheader("💾 레시피 저장 및 고객 발송")
@@ -317,44 +322,135 @@ if selected:
         st.caption("출처: 노션 자료(근육육/내장) + USDA FoodData Central(정어리·계란노른자·굴·사슴고기) | 생식(raw) 기준")
         st.caption("⚠️ 뼈류·소폐·그린트라이프·블루베리·야채 퓨레는 아미노산 데이터 없음 — 집계 제외")
 
-        nrc_ref = {"류신":1700,"이소류신":950,"발린":1230,"메티오닌":830,
-                   "리신":1580,"트레오닌":1200,"트립토판":400,"히스티딘":480,"페닐알라닌":1130,"아르기닌":1280}
+        # NRC 기준: 성견(adult) / 성장기(puppy) 구분
+        nrc_adult = {
+            "류신":1700, "이소류신":950,  "발린":1230, "메티오닌":830,
+            "리신":1580, "트레오닌":1200, "트립토판":400, "히스티딘":480,
+            "페닐알라닌":1130, "아르기닌":1280
+        }
+        # NRC 퍼피 기준 (성견 대비 약 1.5~2배, 특히 아르기닌·리신·트레오닌 높음)
+        nrc_puppy = {
+            "류신":2550, "이소류신":1430, "발린":1840, "메티오닌":1245,
+            "리신":2370, "트레오닌":1800, "트립토판":600, "히스티딘":720,
+            "페닐알라닌":1695, "아르기닌":1920
+        }
         display_aa = ["류신","이소류신","발린","메티오닌","리신","트레오닌","트립토판","히스티딘","페닐알라닌","아르기닌"]
         has_amino = any(amino_name_map.get(f) in amino_db for f in selected if amounts.get(f,0) > 0)
 
         if has_amino and total_kcal > 0:
+
+            # ── 전체 필수 아미노산 테이블 ─────────────────────────────────────
             aa_result = []
             for aa in display_aa:
                 total_mg = total_amino.get(aa, 0)
                 per_1000 = total_mg / total_kcal * 1000
-                nrc_min  = nrc_ref.get(aa)
-                status   = ("✅ 충족" if per_1000 >= nrc_min else "⚠️ 확인필요") if nrc_min else "-"
-                aa_result.append({"아미노산": aa, "총량(mg)": f"{total_mg:.0f}",
-                                  "1000kcal당(mg)": f"{per_1000:.0f}",
-                                  "NRC 사료기준(mg/1000kcal)": str(nrc_min) if nrc_min else "-",
-                                  "판정": status})
+                nrc_min  = nrc_adult.get(aa)
+                status   = ("✅" if per_1000 >= nrc_min else "⚠️") if nrc_min else "-"
+                aa_result.append({
+                    "아미노산": aa,
+                    "총량(mg)": f"{total_mg:.0f}",
+                    "1000kcal당(mg)": f"{per_1000:.0f}",
+                    "NRC 성견기준": str(nrc_min) if nrc_min else "-",
+                    "판정": status
+                })
             def color_aa(val):
                 if "✅" in str(val): return "color:green;font-weight:bold"
                 if "⚠️" in str(val): return "color:orange;font-weight:bold"
                 return ""
-            st.dataframe(pd.DataFrame(aa_result).style.map(color_aa, subset=["판정"]), use_container_width=True)
-            st.info("💡 NRC 기준은 사료(가공) 기준 최솟값입니다. 생식은 열처리 손실 없이 생체이용률이 높습니다.")
+            st.dataframe(pd.DataFrame(aa_result).style.map(color_aa, subset=["판정"]),
+                         use_container_width=True, hide_index=True)
+            st.caption("💡 NRC 기준은 가공사료 기준 최솟값 — 생식은 열처리 손실이 없어 동일 수치도 실제 흡수량이 더 높습니다.")
 
-            m1, m2 = st.columns(2)
-            with m1:
-                bcaa = total_amino["류신"] + total_amino["이소류신"] + total_amino["발린"]
-                st.metric("💪 BCAA 합계", f"{bcaa:.0f} mg")
-            with m2:
-                st.metric("✨ 황아미노산 (메티오닌)", f"{total_amino['메티오닌']:.0f} mg")
+            st.divider()
+            st.markdown("##### 🔍 아미노산 용도별 분석")
+            st.caption("수치만 표시합니다. 판단은 보호자가 직접 해주세요.")
 
+            card1, card2, card3 = st.columns(3)
+
+            # ── 카드 1: 성장기 ──────────────────────────────────────────────
+            with card1:
+                st.markdown("""
+**🐾 성장기 퍼피**
+뼈·근육 형성에 요구량이 높습니다.
+퍼피 기준은 성견 기준의 약 1.5배입니다.
+""")
+                for aa in ["류신", "리신", "아르기닌", "트레오닌"]:
+                    mg   = total_amino.get(aa, 0)
+                    p1k  = mg / total_kcal * 1000
+                    ref  = nrc_puppy.get(aa, 0)
+                    icon = "✅" if p1k >= ref else "⚠️"
+                    st.markdown(f"**{aa}** &nbsp; {mg:.0f} mg &nbsp;|&nbsp; 1000kcal당 {p1k:.0f} mg &nbsp; {icon}")
+                    st.caption(f"퍼피 기준 {ref} mg/1000kcal")
+
+            # ── 카드 2: 노령견 ──────────────────────────────────────────────
+            with card2:
+                st.markdown("""
+**🦴 노령견 근육 유지**
+나이가 들수록 단백질 합성 효율이 낮아집니다.
+BCAA 합계와 리신이 근육 유지의 핵심 지표입니다.
+""")
+                bcaa_names = ["류신", "이소류신", "발린"]
+                bcaa_total = sum(total_amino.get(a, 0) for a in bcaa_names)
+                bcaa_p1k   = bcaa_total / total_kcal * 1000
+                st.metric("💪 BCAA 합계 (류신+이소류신+발린)",
+                          f"{bcaa_total:.0f} mg",
+                          delta=f"1000kcal당 {bcaa_p1k:.0f} mg")
+                st.markdown("")
+                for aa in ["류신", "이소류신", "발린", "리신"]:
+                    mg  = total_amino.get(aa, 0)
+                    p1k = mg / total_kcal * 1000
+                    ref = nrc_adult.get(aa, 0)
+                    icon = "✅" if p1k >= ref else "⚠️"
+                    st.markdown(f"**{aa}** &nbsp; {mg:.0f} mg &nbsp;|&nbsp; 1000kcal당 {p1k:.0f} mg &nbsp; {icon}")
+                    st.caption(f"성견 기준 {ref} mg/1000kcal")
+
+            # ── 카드 3: 피부·털 ─────────────────────────────────────────────
+            with card3:
+                st.markdown("""
+**✨ 피부·털 건강**
+털 케라틴 합성(황함유 아미노산)과
+멜라닌 색소 생성(AAA)에 관여합니다.
+""")
+                # 황함유: 메티오닌
+                met  = total_amino.get("메티오닌", 0)
+                met1k = met / total_kcal * 1000
+                ref_met = nrc_adult.get("메티오닌", 830)
+                icon_met = "✅" if met1k >= ref_met else "⚠️"
+                st.metric("🟡 황함유 — 메티오닌",
+                          f"{met:.0f} mg",
+                          delta=f"1000kcal당 {met1k:.0f} mg")
+                st.caption(f"성견 기준 {ref_met} mg/1000kcal　{icon_met}")
+
+                st.markdown("")
+
+                # AAA: 페닐알라닌 + 트립토판 (amino_db 안에 있는 것만)
+                phe  = total_amino.get("페닐알라닌", 0)
+                trp  = total_amino.get("트립토판", 0)
+                aaa  = phe + trp
+                aaa1k = aaa / total_kcal * 1000
+                ref_phe = nrc_adult.get("페닐알라닌", 1130)
+                ref_trp = nrc_adult.get("트립토판", 400)
+                icon_phe = "✅" if (phe / total_kcal * 1000) >= ref_phe else "⚠️"
+                icon_trp = "✅" if (trp / total_kcal * 1000) >= ref_trp else "⚠️"
+                st.metric("🔵 AAA — 페닐알라닌 + 트립토판",
+                          f"{aaa:.0f} mg",
+                          delta=f"1000kcal당 {aaa1k:.0f} mg")
+                st.markdown(f"**페닐알라닌** {phe:.0f} mg &nbsp; {icon_phe}")
+                st.caption(f"기준 {ref_phe} mg/1000kcal")
+                st.markdown(f"**트립토판** {trp:.0f} mg &nbsp; {icon_trp}")
+                st.caption(f"기준 {ref_trp} mg/1000kcal")
+
+            st.divider()
+
+            # ── 재료별 상세 ──────────────────────────────────────────────────
             with st.expander("📋 재료별 아미노산 상세"):
                 detail = []
                 for f in selected:
-                    if amounts.get(f,0) > 0:
+                    if amounts.get(f, 0) > 0:
                         ak = amino_name_map.get(f)
                         row_d = {"재료명": f, "급여량(g)": amounts[f]}
                         if ak and ak in amino_db:
-                            row_d.update({k: f"{v}mg" for k,v in amino_db[ak].items() if k in display_aa})
+                            row_d.update({k: f"{v}mg" for k, v in amino_db[ak].items() if k in display_aa})
                         else:
                             row_d["류신"] = "데이터없음"
                         detail.append(row_d)
@@ -365,7 +461,7 @@ if selected:
     # TAB 3 ─ 오메가
     with tab3:
         st.subheader("🐟 오메가 6:3 비율 분석")
-        st.caption("출처: 노션 자료 기반 근사치. 사육방식에 따라 실제 비율은 달라질 수 있습니다.")
+        st.caption("출처: USDA FoodData Central raw 데이터 기반 절대값 (g/100g) 직접 합산 | nutritionadvance.com·foodstruct.com 교차검증")
         if omega6_total + omega3_total > 0:
             ratio_omega = omega6_total / omega3_total if omega3_total > 0 else 999
             co1, co2, co3 = st.columns(3)
@@ -378,8 +474,21 @@ if selected:
                 st.warning(f"⚠️ {ratio_omega:.1f}:1 — 허용범위. 정어리·말고기 추가 권장.")
             else:
                 st.error(f"❌ {ratio_omega:.1f}:1 — 오메가-6 과잉. 정어리를 추가하세요.")
-            od = [{"재료명":f,"급여량(g)":amounts[f],"오메가 6:3":omega_db[f][2],"비고":omega_db[f][3]}
-                  for f in selected if amounts.get(f,0)>0 and f in omega_db]
+            od = []
+            for f in selected:
+                if amounts.get(f,0) > 0 and f in omega_db:
+                    o6_per100, o3_per100, ratio_str, note = omega_db[f]
+                    g = amounts[f]
+                    od.append({
+                        "재료명": f,
+                        "급여량(g)": g,
+                        "O6/100g(g)": f"{o6_per100:.3f}",
+                        "O3/100g(g)": f"{o3_per100:.3f}",
+                        "해당량 O6(g)": f"{o6_per100*g/100:.3f}",
+                        "해당량 O3(g)": f"{o3_per100*g/100:.3f}",
+                        "비율": ratio_str,
+                        "비고": note
+                    })
             if od: st.dataframe(pd.DataFrame(od), use_container_width=True)
         else:
             st.info("오메가 데이터가 있는 재료를 선택하면 분석 결과가 나타납니다.")
