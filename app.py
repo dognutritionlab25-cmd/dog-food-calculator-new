@@ -185,7 +185,7 @@ with col1:
     "1.0: 노견 · 거의 안 움직임": 1.0,
     "1.0: 체중 감량이 필요한 성견 (다이어트)": 1.0,
 }
-    selected_label = st.selectbox("강아지의 현재 상태를 선택해 주세요!", list(der_options.keys()), index=3)
+    selected_label = st.selectbox("강아지의 현재 상태를 선택해 주세요!", list(der_options.keys()), index=4)
     activity = der_options[selected_label]
     rer = 70 * (weight ** 0.75)
     der = rer * activity
