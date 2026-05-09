@@ -418,173 +418,183 @@ if selected:
         st.info("💡 정어리(생)·말고기·목초 소고기·야생 사슴이 오메가-3 비율 개선에 가장 효과적입니다.")
 
     # TAB 4 ─ 아연:구리 비율 (신규!)
-    with tab4:
-        st.subheader("🔬 아연:구리 비율 분석")
-        st.caption("✨ 생식의 미네랄 균형을 확인하세요")
+with tab4:
+    st.subheader("🔬 아연:구리 비율 분석")
+    st.caption("✨ 생식의 미네랄 균형을 확인하세요")
 
-        with st.expander("📋 국제 기준 보기"):
-            standards_df = pd.DataFrame({
-                "기준": ["AAFCO (성견)", "NRC 2006", "FEDIAF", "권장 비율"],
-                "구리 (mg/kg DM)": ["7.3", "6.0", "7.3", "-"],
-                "아연 (mg/kg DM)": ["120", "80-100", "100", "-"],
-                "아연:구리 비율": ["16.4:1", "10:1", "10:1", "**10:1 ~ 20:1**"]
-            })
-            st.table(standards_df)
-            st.caption("💡 생식은 수분 70-80% 함유, 건물 기준으로 환산 필요")
+    with st.expander("📋 생식 vs 사료 기준 비교"):
+        standards_df = pd.DataFrame({
+            "기준": ["AAFCO (사료)", "NRC (사료)", "FEDIAF (사료)", "🥩 생식 전문가 권장", "⭐ 생식 최적 범위"],
+            "구리 (mg/1000kcal)": ["7.3", "6.0", "7.3", "2.0", "-"],
+            "아연 (mg/1000kcal)": ["120", "80-100", "100", "15-20", "-"],
+            "아연:구리 비율": ["16.4:1", "10:1", "10:1", "7.5:1 ~ 10:1", "**5:1 ~ 12:1**"]
+        })
+        st.table(standards_df)
+        st.caption("⚠️ 사료 기준(AAFCO/NRC)은 가공 사료용입니다. 생식은 다른 기준 적용!")
+        st.caption("💡 출처: The Holistic Canine, Dogly BARF nutrition specialists")
 
-        st.markdown("---")
+    st.markdown("---")
 
-        # 현재 식단의 구리와 아연 값
-        copper_value = total_stats["구리(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
-        zinc_value = total_stats["아연(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
+    copper_value = total_stats["구리(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
+    zinc_value = total_stats["아연(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
 
-        # 결과 표시
-        col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-        with col1:
-            st.markdown("#### 구리")
-            st.metric("현재 값", f"{copper_value:.2f} mg", delta=f"{copper_value - 1.83:.2f}", delta_color="normal" if copper_value >= 1.83 else "inverse")
-            st.caption("AAFCO 기준: 1.83 mg 이상")
+    with col1:
+        st.markdown("#### 구리")
+        st.metric("현재 값", f"{copper_value:.2f} mg", 
+                  delta=f"{copper_value - 1.83:.2f}", 
+                  delta_color="normal" if copper_value >= 1.83 else "inverse")
+        st.caption("AAFCO 기준: 1.83 mg 이상")
 
-        with col2:
-            st.markdown("#### 아연")
-            st.metric("현재 값", f"{zinc_value:.2f} mg", delta=f"{zinc_value - 20:.2f}", delta_color="normal" if zinc_value >= 20 else "inverse")
-            st.caption("AAFCO 기준: 20 mg 이상")
+    with col2:
+        st.markdown("#### 아연")
+        st.metric("현재 값", f"{zinc_value:.2f} mg", 
+                  delta=f"{zinc_value - 20:.2f}", 
+                  delta_color="normal" if zinc_value >= 15 else "inverse")
+        st.caption("생식 권장: 15-20 mg")
 
-        with col3:
-            st.markdown("#### 아연:구리 비율")
-            if copper_value > 0:
-                ratio = zinc_value / copper_value
-                st.metric("현재 비율", f"{ratio:.1f}:1", delta="이상적" if 10 <= ratio <= 20 else "범위 벗어남", delta_color="normal" if 10 <= ratio <= 20 else "inverse")
-                st.caption("권장: 10:1 ~ 20:1")
-            else:
-                st.metric("현재 비율", "계산 불가")
-                st.caption("⚠️ 구리 데이터 필요")
-
-        st.markdown("---")
-
-        # 평가 결과
+    with col3:
+        st.markdown("#### 아연:구리 비율")
         if copper_value > 0:
             ratio = zinc_value / copper_value
-
-            st.markdown("### 🎯 평가 결과")
-
-            if 10 <= ratio <= 20:
-                st.success(f"""
-                ✅ **이상적인 비율입니다!**
-
-                - 현재 비율: {ratio:.1f}:1
-                - 권장 범위: 10:1 ~ 20:1
-                - 아연과 구리의 균형이 좋습니다.
-                """)
-
-            elif 8 <= ratio < 10:
-                st.warning(f"""
-                ⚠️ **비율이 약간 낮습니다**
-
-                - 현재 비율: {ratio:.1f}:1
-                - 권장 범위: 10:1 ~ 20:1
-
-                **개선 방법:**
-                - 근육고기(소고기, 양고기) 비중 증가
-                - 계란 노른자 추가
-                - 간/내장육 비중 약간 감소
-                """)
-
-            elif 20 < ratio <= 30:
-                st.warning(f"""
-                ⚠️ **비율이 약간 높습니다**
-
-                - 현재 비율: {ratio:.1f}:1
-                - 권장 범위: 10:1 ~ 20:1
-
-                큰 문제는 아니지만, 균형을 맞추면 더 좋습니다.
-
-                **개선 방법:**
-                - 간, 신장 등 내장육 추가
-                - 조개류 소량 추가
-                """)
-
-            elif ratio > 30:
-                st.error(f"""
-                ❌ **아연이 과다합니다!**
-
-                - 현재 비율: {ratio:.1f}:1
-                - 권장 범위: 10:1 ~ 20:1
-
-                ⚠️ 아연 과다는 구리 흡수를 방해할 수 있습니다.
-
-                **개선 방법:**
-                - 간, 신장 등 내장육 추가 (구리 풍부)
-                - 아연 보충제 사용 중지
-                - 수의 영양사 상담 권장
-                """)
-
-            else:  # ratio < 8
-                st.error(f"""
-                ❌ **아연이 부족합니다!**
-
-                - 현재 비율: {ratio:.1f}:1
-                - 권장 범위: 10:1 ~ 20:1
-
-                ⚠️ 아연 부족 위험이 있습니다.
-
-                **개선 방법:**
-                - 근육고기 비중 증가
-                - 아연이 풍부한 식재료 추가:
-                  * 소고기, 양고기
-                  * 계란
-                  * 굴, 조개류 (소량)
-                - 아연 보충제 고려
-                """)
-
-            # 상세 정보
-            with st.expander("📚 왜 10:1 비율이 중요한가?"):
-                st.markdown("""
-                ### 🔬 아연:구리 비율의 과학
-
-                **상호 작용:**
-                - 아연 과다 → 구리 흡수 방해 → 구리 결핍 위험
-                - 구리 과다 → 간 질환 위험 (특정 견종)
-                - 균형이 중요: 둘 다 필수 미네랄
-
-                **국제 기준:**
-                - AAFCO: 최소 1:16.4
-                - NRC 2006: 권장 1:10
-                - FEDIAF: 권장 1:10
-                - **실전 안전 범위: 1:10 ~ 1:20**
-
-                **생식에서 주의할 점:**
-                - 근육고기: 아연 풍부, 구리 적음
-                - 내장육 (간, 신장): 구리 매우 풍부
-                - 균형: 다양한 부위 혼합 급여
-
-                **주요 공급원:**
-
-                **아연이 풍부한 식재료:**
-                - 소고기 (특히 적색육)
-                - 양고기
-                - 계란 노른자
-                - 굴, 조개류
-
-                **구리가 풍부한 식재료:**
-                - 간 (소, 닭, 오리)
-                - 신장
-                - 조개류
-
-                ---
-
-                **참고 문헌:**
-                - NRC (2006) Nutrient Requirements of Dogs and Cats
-                - AAFCO (2023) Dog Food Nutrient Profiles
-                - FEDIAF (2024) Nutritional Guidelines
-                """)
-
+            
+            # 생식 기준 평가
+            if 5 <= ratio <= 12:
+                delta_text = "생식 기준 이상적"
+                delta_color = "normal"
+            elif 12 < ratio <= 16:
+                delta_text = "약간 높음"
+                delta_color = "off"
+            else:
+                delta_text = "범위 벗어남"
+                delta_color = "inverse"
+            
+            st.metric("현재 비율", f"{ratio:.1f}:1", 
+                      delta=delta_text, 
+                      delta_color=delta_color)
+            st.caption("생식 권장: 5:1 ~ 12:1")
         else:
-            st.info("ℹ️ **구리 데이터가 없습니다**\n\n재료를 추가하여 구리와 아연 값을 확인하세요.")
+            st.metric("현재 비율", "계산 불가")
+            st.caption("⚠️ 구리 데이터 필요")
 
-else:
-    st.info("재료를 선택하면 분석 결과가 나타납니다.")
+    st.markdown("---")
+
+    if copper_value > 0:
+        ratio = zinc_value / copper_value
+
+        st.markdown("### 🎯 평가 결과 (생식 기준)")
+
+        if 5 <= ratio <= 12:
+            st.success(f"""
+            ✅ **생식 기준 이상적인 비율입니다!**
+
+            - 현재 비율: {ratio:.1f}:1
+            - 생식 권장 범위: 5:1 ~ 12:1
+            - 아연과 구리의 균형이 생식에 적합합니다.
+            
+            💡 **참고:** AAFCO 사료 기준(10:1~20:1)과 다릅니다. 
+            생식은 구리 함량이 높은 간을 포함하므로 낮은 비율이 정상입니다.
+            """)
+
+        elif 12 < ratio <= 16:
+            st.info(f"""
+            ℹ️ **생식 기준 약간 높지만 허용 범위입니다**
+
+            - 현재 비율: {ratio:.1f}:1
+            - 생식 권장 범위: 5:1 ~ 12:1
+            - 허용 범위: ~16:1까지
+
+            **개선 옵션 (선택사항):**
+            - 소간 비중 약간 증가 (구리 풍부)
+            - 또는 현재 유지 (큰 문제 없음)
+            """)
+
+        elif ratio > 16:
+            st.warning(f"""
+            ⚠️ **아연이 다소 높습니다** (생식 기준)
+
+            - 현재 비율: {ratio:.1f}:1
+            - 생식 권장 범위: 5:1 ~ 12:1
+
+            ⚠️ 아연 과다는 구리 흡수를 방해할 수 있습니다.
+
+            **개선 방법:**
+            - 소간 또는 닭간 비중 증가 (구리 풍부)
+            - 조개류 추가
+            - 아연 보충제 사용 중이면 중단 고려
+            """)
+
+        elif 3 <= ratio < 5:
+            st.warning(f"""
+            ⚠️ **비율이 약간 낮습니다** (생식 기준)
+
+            - 현재 비율: {ratio:.1f}:1
+            - 생식 권장 범위: 5:1 ~ 12:1
+
+            **개선 방법:**
+            - 근육고기(소고기, 양고기) 비중 증가
+            - 계란 노른자 추가
+            - 간 비중 약간 감소
+            """)
+
+        else:  # ratio < 3
+            st.error(f"""
+            ❌ **아연이 부족합니다!**
+
+            - 현재 비율: {ratio:.1f}:1
+            - 생식 권장 범위: 5:1 ~ 12:1
+
+            ⚠️ 아연 부족은 피부·털 문제의 주요 원인입니다.
+
+            **개선 방법 (필수):**
+            - 근육고기 비중 대폭 증가
+            - 굴 추가 (아연 매우 풍부)
+            - 아연 보충제 고려 (15-30mg/일)
+            """)
+
+        with st.expander("📚 왜 생식은 기준이 다른가?"):
+            st.markdown("""
+            ### 🥩 생식 vs 사료: 아연:구리 비율의 차이
+
+            **사료 기준 (AAFCO/NRC): 10:1 ~ 20:1**
+            - 가공 과정에서 영양소 손실
+            - 생체이용률 낮은 보충제 사용
+            - 안전 마진을 크게 설정
+
+            **생식 기준: 5:1 ~ 12:1**
+            - 원재료 그대로 → 높은 생체이용률
+            - 간(구리 풍부)을 5-10% 포함
+            - 근육고기(아연 풍부) 60-70% 포함
+
+            ---
+
+            **생식의 현실적인 문제:**
+
+            생식 급여 시 소간을 5% 비율로 주면 구리가 권장량의 2배가 되고, 
+            아연은 60%만 충족되어 피부·털 문제가 나타났다 
+
+            **아연 부족 증상:**
+            - 거칠고 윤기 없는 털
+            - 건조하고 각질이 일어나는 피부
+            - 면역력 저하
+
+            **생식에서 아연 보충 방법:**
+            1. **굴** - 1온스(28g)에 아연 25mg + 구리 1.25mg 함유
+            2. **소고기** - 적색육 위주로 급여
+            3. **계란 노른자** 추가
+            4. **아연 보충제** (필요시)
+
+            ---
+
+            **참고 문헌:**
+            - The Holistic Canine: Raw Diet Nutritional Balance
+            - Dogly: Ratio Diets and Zinc & Copper
+            - NRC (2006) + Raw feeding adjustments
+            """)
+
+    else:
+        st.info("ℹ️ **구리 데이터가 없습니다**\n\n재료를 추가하여 구리와 아연 값을 확인하세요.")
 
 st.markdown("---")
 st.caption("반려견영양연구소 | 생식 계산기 v5.1")
