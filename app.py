@@ -500,3 +500,158 @@ BCAA 합계와 리신이 근육 유지의 핵심 지표입니다.
 
 else:
     st.info("재료를 선택하면 분석 결과가 나타납니다.")
+st.markdown("---")
+st.markdown("---")
+st.header("🆕 아연:구리 비율 분석기 (V5.1)")
+st.caption("✨ 생식의 미네랄 균형을 확인하세요")
+
+# 기준 표시
+with st.expander("📋 국제 기준 보기"):
+    standards_df = pd.DataFrame({
+        "기준": ["AAFCO (성견)", "NRC 2006", "FEDIAF", "권장 비율"],
+        "구리 (mg/kg DM)": ["7.3", "6.0", "7.3", "-"],
+        "아연 (mg/kg DM)": ["120", "80-100", "100", "-"],
+        "아연:구리 비율": ["16.4:1", "10:1", "10:1", "**10:1 ~ 20:1**"]
+    })
+    st.table(standards_df)
+    st.caption("💡 생식은 수분 70-80% 함유, 건물 기준으로 환산 필요")
+
+st.markdown("---")
+
+# 입력 섹션
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("#### 구리 함량")
+    copper_input = st.number_input(
+        "구리 (mg/kg DM 기준)",
+        min_value=0.0, max_value=500.0,
+        value=10.0, step=0.1,
+        help="건물 기준 구리 함량"
+    )
+
+with col2:
+    st.markdown("#### 아연 함량")
+    zinc_input = st.number_input(
+        "아연 (mg/kg DM 기준)",
+        min_value=0.0, max_value=2000.0,
+        value=150.0, step=1.0,
+        help="건물 기준 아연 함량"
+    )
+
+# 분석 버튼
+if st.button("🔬 비율 분석하기", use_container_width=True):
+    st.markdown("---")
+    
+    # 비율 계산
+    if copper_input > 0:
+        ratio = zinc_input / copper_input
+    else:
+        ratio = 0
+        st.error("⚠️ 구리 값을 입력해주세요")
+        st.stop()
+    
+    # 결과 표시
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("구리", f"{copper_input:.1f} mg/kg")
+    
+    with col2:
+        st.metric("아연", f"{zinc_input:.1f} mg/kg")
+    
+    with col3:
+        st.metric("아연:구리 비율", f"{ratio:.1f}:1")
+    
+    # 평가
+    st.markdown("### 🎯 평가 결과")
+    
+    if 10 <= ratio <= 20:
+        st.success(f"""
+        ✅ **이상적인 비율입니다!**
+        
+        - 현재 비율: {ratio:.1f}:1
+        - 권장 범위: 10:1 ~ 20:1
+        - 아연과 구리의 균형이 좋습니다.
+        """)
+    
+    elif 8 <= ratio < 10:
+        st.warning(f"""
+        ⚠️ **비율이 약간 낮습니다**
+        
+        - 현재 비율: {ratio:.1f}:1
+        - 권장 범위: 10:1 ~ 20:1
+        - 아연 함량을 조금 늘리는 것을 권장합니다.
+        
+        **아연 보충 방법:**
+        - 소고기, 양고기 비중 증가
+        - 계란 노른자 추가
+        - 굴, 조개류 소량 추가
+        """)
+    
+    elif 20 < ratio <= 30:
+        st.warning(f"""
+        ⚠️ **비율이 약간 높습니다**
+        
+        - 현재 비율: {ratio:.1f}:1
+        - 권장 범위: 10:1 ~ 20:1
+        - 큰 문제는 아니지만, 균형을 맞추면 더 좋습니다.
+        """)
+    
+    elif ratio > 30:
+        st.error(f"""
+        ❌ **아연이 과다합니다!**
+        
+        - 현재 비율: {ratio:.1f}:1
+        - 권장 범위: 10:1 ~ 20:1
+        - 아연 과다는 구리 흡수를 방해할 수 있습니다.
+        
+        **개선 방법:**
+        - 간, 신장 등 내장육 추가 (구리 풍부)
+        - 아연 보충제 사용 중지
+        - 수의 영양사 상담 권장
+        """)
+    
+    else:  # ratio < 8
+        st.error(f"""
+        ❌ **아연이 부족합니다!**
+        
+        - 현재 비율: {ratio:.1f}:1
+        - 권장 범위: 10:1 ~ 20:1
+        - 아연 부족 위험이 있습니다.
+        
+        **개선 방법:**
+        - 근육고기 비중 증가
+        - 아연 보충제 고려
+        - 수의 영양사 상담 권장
+        """)
+    
+    # 참고 정보
+    with st.expander("📚 왜 10:1 비율이 중요한가?"):
+        st.markdown("""
+        ### 🔬 아연:구리 비율의 과학
+        
+        **상호 작용:**
+        - 아연 과다 → 구리 흡수 방해 → 구리 결핍 위험
+        - 구리 과다 → 간 질환 위험 (특정 견종)
+        - 균형이 중요: 둘 다 필수 미네랄
+        
+        **국제 기준:**
+        - AAFCO: 최소 1:10.96
+        - NRC 2006: 권장 1:10
+        - FEDIAF: 권장 1:10
+        - 실전 안전 범위: 1:10 ~ 1:20
+        
+        **생식에서 주의할 점:**
+        - 근육고기: 아연 풍부, 구리 적음
+        - 내장육 (간, 신장): 구리 풍부
+        - 균형: 다양한 부위 혼합 급여
+        
+        **참고 문헌:**
+        - NRC (2006) Nutrient Requirements of Dogs and Cats
+        - AAFCO (2023) Dog Food Nutrient Profiles
+        - FEDIAF (2024) Nutritional Guidelines
+        """)
+
+st.markdown("---")
+st.caption("반려견영양연구소 | 생식 계산기 V5.1")
