@@ -213,18 +213,17 @@ with col2:
     selected = st.multiselect("재료를 고르세요:", all_foods, default=[bone_options[0]] if bone_options else [])
     st.caption("💡 심장·폐·모래주머니·우신통은 근육고기로 분류됩니다")
 
+# ── 급여량 입력 ──────────────────────────────────────────────────────────────
+amounts = {}
+if selected:
+    cols = st.columns(3)
+    for i, f in enumerate(selected):
+        with cols[i % 3]:
+            amounts[f] = st.number_input(f"{f} (g)", 0, 1000, 50, step=5)
+
 # ── 계산 ────────────────────────────────────────────────────────────────────
 if selected:
     st.divider()
-    total_grams = sum(amounts[f] for f in selected if f in amounts)
-
-    amounts = {}
-    if selected:
-        cols = st.columns(3)
-        for i, f in enumerate(selected):
-            with cols[i % 3]:
-                amounts[f] = st.number_input(f"{f} (g)", 0, 1000, 50, step=5)
-
     total_grams = sum(amounts.values())
     mass_breakdown = {"actual_bone": 0, "muscle_meat": 0, "organ": 0, "veggie": 0}
     total_stats = {k: 0.0 for k in aafco_standards}
