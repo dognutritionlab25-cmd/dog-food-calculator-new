@@ -2,6 +2,8 @@ from nutrition_core import basic_judgments
 from nutrition_core import energy_requirements
 import streamlit as st
 import pandas as pd
+from nutrition_ui import (PRECOOKED_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
+    render_data_warnings, render_coverage, render_scope, render_cooking_policy)
 
 st.set_page_config(page_title="반려견 영양 연구소 계산기 v6.2", layout="wide")
 st.title("🐶 반려견 영양 연구소 [영양 계산기 v6.2]")
@@ -25,7 +27,7 @@ food_df = load_food_df()
 
 # 반드시 익혀서 급여해야 하는 재료 — DB 수치 자체가 '익힌 상태' 기준이므로
 # 화식 조리 보존율(중복 손실 계산)을 적용하지 않고, 입력값도 익힌 무게 그대로 사용
-PRECOOKED_ITEMS = {"익힌 굴 (Oyster)", "익힌 홍합 (Green-Lipped Mussel)"}
+# PRECOOKED_ITEMS comes from the shared catalog via nutrition_ui.
 
 
 # Preserve existing coefficient values, including unresolved effective O3 behavior.
@@ -112,6 +114,8 @@ with tab_raw:
         raw_request = make_request(_amounts, weight=weight, activity=activity, kelp=_kelp_iodine,
                                    supplements={"kelp_enabled": use_kelp, "iodine_mcg": _kelp_iodine})
         _raw_result = calculate(raw_request, "calculator")
+        render_data_warnings(st, _raw_result)
+        render_scope(st, "calculator")
         total_grams = _raw_result["input_grams"]
         mass_breakdown = _raw_result["mass"]
         total_stats = _raw_result["nutrients"]
@@ -222,7 +226,8 @@ with tab_raw:
         with tab2:
             st.subheader("🧬 필수 아미노산 분석")
             st.caption("출처: 노션 자료(근육육/내장) + USDA FoodData Central | 생식(raw) 기준")
-            st.caption("⚠️ 뼈류·소폐·그린트라이프·신규 내장육 일부·야채 퓨레는 아미노산 데이터 없음 — 집계 제외")
+            render_coverage(st, _raw_result, "amino")
+            st.caption("주 표는 기존 성견 기준의 10개 표시 항목입니다. BCAA·Phe+Trp도 등록분 합계입니다.")
             nrc_adult = {"류신":1700,"이소류신":950,"발린":1230,"메티오닌":830,"리신":1580,"트레오닌":1200,"트립토판":400,"히스티딘":480,"페닐알라닌":1130,"아르기닌":1280}
             nrc_puppy = {"류신":2550,"이소류신":1430,"발린":1840,"메티오닌":1245,"리신":2370,"트레오닌":1800,"트립토판":600,"히스티딘":720,"페닐알라닌":1695,"아르기닌":1920}
             display_aa = ["류신","이소류신","발린","메티오닌","리신","트레오닌","트립토판","히스티딘","페닐알라닌","아르기닌"]
@@ -240,7 +245,7 @@ with tab_raw:
                     if "⚠️" in str(val): return "color:orange;font-weight:bold"
                     return ""
                 st.dataframe(pd.DataFrame(aa_result).style.map(color_aa,subset=["판정"]),use_container_width=True,hide_index=True)
-                st.caption("💡 NRC 기준은 가공사료 기준 최솟값 — 생식은 열처리 손실이 없어 동일 수치도 실제 흡수량이 더 높습니다.")
+                st.caption("현재 표는 기존 성견 기준과 등록분을 비교합니다. 실제 흡수량을 별도로 계산하지 않습니다.")
                 st.divider()
                 st.markdown("##### 🔍 아미노산 용도별 분석")
                 card1, card2, card3 = st.columns(3)
@@ -287,7 +292,8 @@ with tab_raw:
         # TAB 3 ─ 오메가
         with tab3:
             st.subheader("🐟 오메가 6:3 비율 분석")
-            st.caption("출처: USDA FoodData Central raw 데이터 기반")
+            st.caption("기존 지방산 DB 등록분 기준이며 식품별 O3 집계 범위는 출처 메모에 따라 다릅니다.")
+            has_omega_data = render_coverage(st, _raw_result, "omega")
 
             # EPA·DHA 영양제 직접 입력
             supp_o3 = 0.0
@@ -316,12 +322,13 @@ with tab_raw:
             if omega6_total + omega3_final > 0:
                 ratio_omega = _raw_result["ratios"]["omega6_3"] if omega3_final > 0 else float("inf")
                 co1,co2,co3=st.columns(3)
-                with co1: st.metric("오메가-6 추정량",f"{omega6_total:.2f} g")
+                with co1: st.metric("오메가-6 등록분", f"{omega6_total:.2f} g" if has_omega_data else "미등록")
                 with co2:
                     delta_str = f"+{supp_o3*1000:.0f}mg 영양제 포함" if supp_o3 > 0 else None
-                    st.metric("오메가-3 추정량",f"{omega3_final:.2f} g", delta=delta_str)
-                with co3: st.metric("오메가 6:3 비율", f"{ratio_omega:.1f} : 1" if omega3_final > 0 else "계산 불가")
-                if omega3_final <= 0: st.info("오메가3 합계가 0이어서 비율을 계산할 수 없습니다.")
+                    st.metric("오메가-3 등록분 + 보충",f"{omega3_final:.2f} g", delta=delta_str)
+                with co3: st.metric("오메가 6:3 비율", f"{ratio_omega:.1f} : 1" if omega3_final > 0 and has_omega_data else "계산 불가")
+                if not has_omega_data: st.info("식품 오메가 데이터 미등록으로 식단 비율을 표시할 수 없습니다. 보충량만 반영되었습니다.")
+                elif omega3_final <= 0: st.info("오메가3 합계가 0이어서 비율을 계산할 수 없습니다.")
                 elif ratio_omega<=5:   st.success(f"✅ {ratio_omega:.1f}:1 — 항염증 범위.")
                 elif ratio_omega<=10: st.warning(f"⚠️ {ratio_omega:.1f}:1 — 허용범위. 정어리·말고기 추가 권장.")
                 else:                 st.error(f"❌ {ratio_omega:.1f}:1 — 오메가-6 과잉. 정어리를 추가하세요.")
@@ -341,10 +348,10 @@ with tab_raw:
         with tab4:
             st.subheader("🔬 아연:구리 비율 분석")
             st.caption("✨ 생식의 미네랄 균형을 확인하세요")
-            with st.expander("📋 생식 vs 사료 기준 비교"):
-                standards_df=pd.DataFrame({"기준":["AAFCO (사료)","NRC (사료)","FEDIAF (사료)","🥩 생식 전문가 권장","⭐ 생식 최적 범위"],"구리 (mg/1000kcal)":["7.3","6.0","7.3","2.0","-"],"아연 (mg/1000kcal)":["120","80-100","100","15-20","-"],"아연:구리 비율":["16.4:1","10:1","10:1","7.5:1 ~ 10:1","**5:1 ~ 12:1**"]})
+            with st.expander("📋 현재 판정에 적용하는 기준"):
+                standards_df = pd.DataFrame([{"프로필": "calculator", "영양소": n, "최소(1000kcal당)": v["min"], "최대(1000kcal당)": v["max"]} for n, v in aafco_standards.items() if n in ("아연(mg)", "구리(mg)")])
                 st.dataframe(standards_df, use_container_width=True)
-                st.caption("⚠️ 사료 기준(AAFCO/NRC)은 가공 사료용입니다. 생식은 다른 기준 적용!")
+                st.caption("기본 영양표와 같은 기준입니다. Zn:Cu 비율 평가는 별도의 기존 비율 범위를 사용합니다.")
             st.markdown("---")
             copper_value = total_stats["구리(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
             zinc_value   = total_stats["아연(mg)"] / total_kcal * 1000 if total_kcal > 0 else 0
@@ -352,11 +359,11 @@ with tab_raw:
             with col1:
                 st.markdown("#### 구리")
                 st.metric("현재 값",f"{copper_value:.2f} mg",delta=f"{copper_value-1.83:.2f}",delta_color="normal" if copper_value>=1.83 else "inverse")
-                st.caption("AAFCO 기준: 1.83 mg 이상")
+                st.caption(f"calculator 최소: {aafco_standards['구리(mg)']['min']} mg/1000kcal")
             with col2:
                 st.markdown("#### 아연")
                 st.metric("현재 값",f"{zinc_value:.2f} mg",delta=f"{zinc_value-20:.2f}",delta_color="normal" if zinc_value>=15 else "inverse")
-                st.caption("생식 권장: 15-20 mg")
+                st.caption(f"calculator 최소: {aafco_standards['아연(mg)']['min']} mg/1000kcal | 색상은 기존 표시 규칙 유지")
             with col3:
                 st.markdown("#### 아연:구리 비율")
                 if copper_value > 0:
@@ -373,15 +380,15 @@ with tab_raw:
                 ratio=_raw_result["ratios"]["zn_cu"]
                 st.markdown("### 🎯 평가 결과 (생식 기준)")
                 if 5<=ratio<=12:
-                    st.success(f"✅ **생식 기준 이상적인 비율입니다!**\n\n- 현재 비율: {ratio:.1f}:1\n- 생식 권장 범위: 5:1 ~ 12:1\n\n💡 AAFCO 사료 기준(10:1~20:1)과 다릅니다. 생식은 구리 함량이 높은 간을 포함하므로 낮은 비율이 정상입니다.")
+                    st.success(f"✅ 기존 생식 비율 범위 안입니다 ({ratio:.1f}:1). 아연·구리 절대량은 기본 영양표에서 별도로 확인하세요.")
                 elif 12<ratio<=16:
-                    st.info(f"ℹ️ **생식 기준 약간 높지만 허용 범위입니다**\n\n- 현재 비율: {ratio:.1f}:1\n- 소간 비중 약간 증가 (구리 풍부) 또는 현재 유지")
+                    st.info(f"ℹ️ 기존 생식 비율 허용 구간입니다 ({ratio:.1f}:1). 아연·구리 절대량은 기본 영양표에서 별도로 확인하세요.")
                 elif ratio>16:
-                    st.warning(f"⚠️ **아연이 다소 높습니다** (생식 기준)\n\n- 현재 비율: {ratio:.1f}:1\n- 소간 또는 닭간 비중 증가 / 조개류 추가")
+                    st.warning(f"⚠️ 기존 생식 비율 범위보다 높습니다 ({ratio:.1f}:1). 아연·구리 절대량은 기본 영양표에서 별도로 확인하세요.")
                 elif 3<=ratio<5:
-                    st.warning(f"⚠️ **비율이 약간 낮습니다**\n\n- 현재 비율: {ratio:.1f}:1\n- 근육고기(소고기·양고기) 비중 증가 / 간 비중 약간 감소")
+                    st.warning(f"⚠️ 기존 생식 비율 범위보다 낮습니다 ({ratio:.1f}:1). 아연·구리 절대량은 기본 영양표에서 별도로 확인하세요.")
                 else:
-                    st.error(f"❌ **아연이 부족합니다!**\n\n- 현재 비율: {ratio:.1f}:1\n- 근육고기 대폭 증가 / 굴 추가 / 아연 보충제 고려")
+                    st.error(f"❌ 기존 생식 비율 범위보다 크게 낮습니다 ({ratio:.1f}:1). 아연·구리 절대량은 기본 영양표에서 별도로 확인하세요.")
             else:
                 st.info("ℹ️ 재료를 추가하여 구리와 아연 값을 확인하세요.")
 
@@ -434,16 +441,7 @@ with tab_cooked:
             horizontal=True,
             key="cooking_method"
         )
-        ret = RETENTION[cooking_method]
-        st.markdown(f"""
-<div style="background:#fff8e1;border-left:4px solid #f9a825;padding:0.6rem 1rem;border-radius:6px;font-size:0.88rem;">
-<b>{cooking_method} 추정 보존율</b> &nbsp;·&nbsp;
-단백질/미네랄 {ret['단백질'][0]}~{ret['단백질'][1]}% &nbsp;·&nbsp;
-비타민A/D/E {ret['비타민A'][0]}~{ret['비타민A'][1]}% &nbsp;·&nbsp;
-비타민B {ret['비타민B'][0]}~{ret['비타민B'][1]}% &nbsp;·&nbsp;
-오메가3 {ret['오메가3'][0]}~{ret['오메가3'][1]}%
-</div>
-""", unsafe_allow_html=True)
+        render_cooking_policy(st, cooking_method)
 
     st.divider()
 
@@ -452,7 +450,7 @@ with tab_cooked:
     cooked_foods = food_df[food_df['category'] != 'bone']['재료명'].tolist()
     c_selected = st.multiselect("재료를 선택하세요 (뼈고기 제외)", cooked_foods, key="c_selected")
     st.caption("💡 화식에서는 뼈를 익히면 안 됩니다. 칼슘은 아래 보충제로 공급하세요.")
-    st.caption("⚖️ **익힌 굴·익힌 홍합**은 반드시 익혀서 급여해야 하므로, 아래 입력값은 생고기가 아니라 **익힌 상태 그대로의 무게**입니다.")
+    st.caption(WEIGHT_BASIS_NOTE)
 
     # ── 급여량 + 조리 수율 ────────────────────────────────────────────────────
     c_amounts_raw = {}   # 생고기 입력값
@@ -460,7 +458,7 @@ with tab_cooked:
     c_actual_weights = {}
 
     if c_selected:
-        st.markdown("#### 생고기 기준 입력량 및 조리 후 예상 무게")
+        st.markdown("#### 재료 입력 중량 및 조리 후 예상 무게")
         for f in c_selected:
             row_f = food_df[food_df['재료명'] == f].iloc[0]
             cat_f = row_f['category']
@@ -470,7 +468,7 @@ with tab_cooked:
             fc1, fc2, fc3, fc4 = st.columns([3, 2, 2, 2])
             is_precooked = f in PRECOOKED_ITEMS
             with fc1:
-                raw_label = f"{f} 익힌 무게 (g)" if is_precooked else f"{f} 생고기 (g)"
+                raw_label = weight_label(f)
                 raw_g = st.number_input(raw_label, 0, 1000, 50, step=5, key=f"craw_{f}")
                 c_amounts_raw[f] = raw_g
             with fc2:
@@ -536,6 +534,8 @@ with tab_cooked:
             original_fields={"raw_amounts": dict(c_amounts_raw), "actual_weight_selection": {
                 f: bool(st.session_state.get("cactual_chk_" + f, False)) for f in c_selected}})
         _cooked_result = calculate(cooked_request, "calculator")
+        render_data_warnings(st, _cooked_result)
+        render_scope(st, "calculator")
         c_total_grams_raw = _cooked_result["input_grams"]
         c_total_grams_cooked = _cooked_result["cooked_grams"]
         c_mass_breakdown = _cooked_result["mass"]
@@ -551,8 +551,8 @@ with tab_cooked:
             rc1, rc2 = st.columns([1, 2])
             with rc1:
                 st.subheader("⚖️ 식단 비율")
-                st.metric("생고기 총량", f"{c_total_grams_raw:.0f}g")
-                st.metric("조리 후 예상 총량", f"{c_total_grams_cooked:.0f}g")
+                st.metric("재료 입력 총량", f"{c_total_grams_raw:.0f}g")
+                st.metric("조리 후 총량 (실측 입력 또는 예상)", f"{c_total_grams_cooked:.0f}g")
                 if c_total_grams_raw > 0:
                     pm = c_mass_breakdown['muscle_meat'] / c_total_grams_raw * 100
                     po = c_mass_breakdown['organ']       / c_total_grams_raw * 100
@@ -612,7 +612,8 @@ with tab_cooked:
 
         with ctab2:
             st.subheader("🐟 오메가 6:3 비율")
-            if c_omega3 > 0:
+            has_c_omega = render_coverage(st, _cooked_result, "omega")
+            if c_omega3 > 0 and has_c_omega:
                 ratio_str = f"{_cooked_result['ratios']['omega6_3']:.1f} : 1"
                 st.metric("오메가 6:3 비율", ratio_str)
                 if _cooked_result['ratios']['omega6_3'] <= 5:
@@ -621,13 +622,14 @@ with tab_cooked:
                     st.warning(f"⚠️ {ratio_str} — 오메가3 보충 권장")
                 else:
                     st.error(f"❌ {ratio_str} — 오메가3 심각 부족")
-                st.caption(f"오메가6: {c_omega6:.2f}g | 오메가3: {c_omega3:.2f}g (조리 보존율 적용)")
+                st.caption(f"등록분 오메가6: {c_omega6:.2f}g (보존율 미적용) | 오메가3: {c_omega3:.2f}g (현재 실효 보존율 적용, veggie·익힌 굴/홍합 제외)")
             else:
                 st.info("오메가3 데이터가 있는 재료를 선택하면 분석됩니다.")
 
         with ctab3:
             st.subheader("🧬 아미노산 분석 (필수 아미노산)")
-            st.caption(f"조리법: {cooking_method} | 단백질 보존율 적용 (야채 제외)")
+            st.caption(f"조리법: {cooking_method} | 단백질 보존율 적용 (veggie·익힌 굴/홍합 제외). 티로신 포함 기존 11개 항목을 표시합니다.")
+            render_coverage(st, _cooked_result, "amino")
             has_amino = any(v > 0 for v in c_total_amino.values())
             if has_amino and c_total_kcal > 0:
                 aa_display = []
@@ -640,6 +642,7 @@ with tab_cooked:
 
         with ctab4:
             st.subheader("🔬 아연 : 구리 비율")
+            st.caption("비율 평가는 아연·구리 절대량의 부족/과잉 판정과 다릅니다. 기본 영양표를 함께 확인하세요.")
             c_zinc = c_total_stats.get("아연(mg)", 0)
             c_copper = c_total_stats.get("구리(mg)", 0)
             if c_copper > 0:
@@ -647,13 +650,13 @@ with tab_cooked:
                 st.metric("아연:구리 비율", f"{ratio:.1f} : 1")
                 st.caption(f"아연: {c_zinc:.2f}mg | 구리: {c_copper:.2f}mg (조리 보존율 적용)")
                 if ratio < 8:
-                    st.error(f"❌ **아연이 부족합니다!**\n\n- 현재 비율: {ratio:.1f}:1\n- 근육고기 대폭 증가 / 굴(익힘) 추가 / 아연 보충제 고려")
+                    st.error(f"❌ 기존 화식 비율 범위보다 낮습니다 ({ratio:.1f}:1). 비율만으로 아연 부족을 단정할 수 없습니다.")
                 elif ratio <= 15:
                     st.success(f"✅ **적정 범위** ({ratio:.1f}:1) — 권장 8~15:1")
                 elif ratio <= 20:
-                    st.warning(f"⚠️ **아연 과다** ({ratio:.1f}:1) — 간/굴 비율을 줄이세요")
+                    st.warning(f"⚠️ 기존 화식 비율 범위보다 높습니다 ({ratio:.1f}:1). 아연·구리 절대량을 함께 확인하세요.")
                 else:
-                    st.error(f"❌ **심각한 아연 과잉** ({ratio:.1f}:1) — 간 및 아연 급원 재료를 크게 줄이세요")
+                    st.error(f"❌ 기존 화식 비율 범위보다 크게 높습니다 ({ratio:.1f}:1). 비율만으로 아연 과잉을 단정할 수 없습니다.")
             else:
                 st.info("구리 함유 재료(간, 굴 등)를 선택하면 분석됩니다.")
 
