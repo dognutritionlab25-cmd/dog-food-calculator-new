@@ -2,8 +2,8 @@ from nutrition_core import basic_judgments
 from nutrition_core import energy_requirements
 import streamlit as st
 import pandas as pd
-from nutrition_ui import (PRECOOKED_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
-    render_data_warnings, render_coverage, render_scope, render_cooking_policy)
+from nutrition_ui import (PRECOOKED_ITEMS, FRUIT_RAW_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
+    render_data_warnings, render_coverage, render_scope, render_cooking_policy, nutrient_value_text)
 
 st.set_page_config(page_title="반려견 영양 연구소 계산기 v6.2", layout="wide")
 st.title("🐶 반려견 영양 연구소 [영양 계산기 v6.2]")
@@ -179,14 +179,16 @@ with tab_raw:
                         val_1000 = _raw_result["per_1000kcal"][nutri]
                         min_v, max_v = std['min'], std['max']
                         status = "✅ 적합"
-                        if basic_judgments(_raw_result, "calculator")[nutri] == "low":
+                        if basic_judgments(_raw_result, "calculator")[nutri] == "unavailable":
+                            status = "⚪ 판정 보류 (미등록 포함)"
+                        elif basic_judgments(_raw_result, "calculator")[nutri] == "low":
                             status = f"❌ 부족 (최소 {min_v})"
                         elif basic_judgments(_raw_result, "calculator")[nutri] == "high":
                             status = f"⚠️ 과잉 (최대 {max_v})"
                         # 칼슘은 절대량이 적합해도 Ca:P 범위 벗어나면 불균형으로 표시
                         if nutri == "칼슘(mg)" and status == "✅ 적합" and not cap_ok:
                             status = f"⚠️ Ca:P 불균형 ({cap_ratio:.2f}:1, 권장 1.1~2:1)"
-                        res_data.append({"영양소":nutri,"현재(1000kcal당)":f"{val_1000:.2f}","AAFCO 기준":f"{min_v}~{max_v if max_v else ''}","판정":status})
+                        res_data.append({"영양소":nutri,"현재(1000kcal당)":nutrient_value_text(_raw_result, nutri),"AAFCO 기준":f"{min_v}~{max_v if max_v else ''}","판정":status})
                     res_df = pd.DataFrame(res_data)
                     def color_status(val):
                         return f'color:{"green" if "적합" in val else "red" if "부족" in val else "orange"};font-weight:bold'
@@ -460,6 +462,12 @@ with tab_cooked:
     if c_selected:
         st.markdown("#### 재료 입력 중량 및 조리 후 예상 무게")
         for f in c_selected:
+            if f in FRUIT_RAW_ITEMS:
+                raw_g = st.number_input(weight_label(f), 0, 1000, 50, step=5, key=f"craw_{f}")
+                c_amounts_raw[f] = raw_g
+                c_amounts_cooked[f] = raw_g
+                st.caption("생과일 급여량 그대로 사용 (조리 보정 없음)")
+                continue
             row_f = food_df[food_df['재료명'] == f].iloc[0]
             cat_f = row_f['category']
             yield_key = cat_f
@@ -583,7 +591,9 @@ with tab_cooked:
                     for nutri, std in aafco_standards.items():
                         val_1000 = _cooked_result["per_1000kcal"][nutri]
                         min_v, max_v = std['min'], std['max']
-                        if basic_judgments(_cooked_result, "calculator")[nutri] == "low":
+                        if basic_judgments(_cooked_result, "calculator")[nutri] == "unavailable":
+                            status = "⚪ 판정 보류 (미등록 포함)"
+                        elif basic_judgments(_cooked_result, "calculator")[nutri] == "low":
                             status = f"❌ 부족 (최소 {min_v})"
                         elif basic_judgments(_cooked_result, "calculator")[nutri] == "high":
                             status = f"⚠️ 과잉 (최대 {max_v})"
@@ -593,7 +603,7 @@ with tab_cooked:
                             status = f"⚠️ Ca:P 불균형 ({cap_ratio:.2f}:1, 권장 1.1~2:1)"
                         res_data.append({
                             "영양소": nutri,
-                            "현재(1000kcal당)": f"{val_1000:.2f}",
+                            "현재(1000kcal당)": nutrient_value_text(_cooked_result, nutri),
                             "AAFCO 기준": f"{min_v}~{max_v if max_v else ''}",
                             "판정": status
                         })
