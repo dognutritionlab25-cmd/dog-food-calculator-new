@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-ENGINE_VERSION = '1.1.0-fruit-raw-lkg'
+ENGINE_VERSION = '1.2.0-prepared-puree-weight'
 _DATA = json.loads(Path(__file__).with_name('catalog.json').read_text())
 
 def canonical_json(value):
@@ -16,7 +16,7 @@ def canonical_json(value):
 def digest(value):
     return hashlib.sha256(canonical_json(value).encode()).hexdigest()
 
-FOOD_DB_VERSION = 'food-' + digest({k:_DATA[k] for k in ['db_data','omega_db','amino_db','amino_name_map','FRUIT_RAW_ITEMS']})[:16]
+FOOD_DB_VERSION = 'food-' + digest({k:_DATA[k] for k in ['db_data','omega_db','amino_db','amino_name_map','FRUIT_RAW_ITEMS','PREPARED_PUREE_ITEMS']})[:16]
 ENGINE_SOURCE_HASH = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 _POLICY = {
     'version':'stage1-legacy-effective-v1',
@@ -28,6 +28,8 @@ _POLICY = {
     'yield_organ':'use_defined_organ_entry',
     'raw_fruit':_DATA['FRUIT_RAW_ITEMS'],
     'raw_fruit_cooking':'input grams; no yield, retention or actual cooked weight override',
+    'prepared_puree':_DATA['PREPARED_PUREE_ITEMS'],
+    'prepared_puree_cooking':'finished puree input grams; no yield or actual cooked weight override; existing nutrient calculations unchanged',
     'new_fruit_missing':'null contribution; registered subtotal plus nutrient_missing coverage; judgment unavailable',
     'standards':{
         'calculator':_DATA['aafco_standards'],
@@ -104,14 +106,16 @@ def calculate(request,profile='review'):
         if name not in foods:raise ValueError('Unknown food: '+name)
         row=foods[name]; cat=row['category']; precooked=name in _DATA['PRECOOKED_ITEMS']
         raw_fruit=name in _DATA['FRUIT_RAW_ITEMS']
+        prepared_puree=name in _DATA['PREPARED_PUREE_ITEMS']
+        fixed_weight=raw_fruit or prepared_puree
         if cooked and cat=='bone':raise ValueError('Bone item not allowed in cooked mode')
         expected_basis='cooked' if precooked else 'raw'
         if item.get('weight_basis')!=expected_basis:raise ValueError('Weight basis incompatible with legacy food profile')
         actual=item.get('actual_cooked_g')
         if actual is not None:actual=number(actual,'actual cooked grams')
         grams_total+=g
-        predicted=g if not cooked or precooked or raw_fruit else round(g*_DATA['COOKING_YIELD'][method][cat])
-        cooked_total+=actual if cooked and actual is not None and not precooked and not raw_fruit else predicted
+        predicted=g if not cooked or precooked or fixed_weight else round(g*_DATA['COOKING_YIELD'][method][cat])
+        cooked_total+=actual if cooked and actual is not None and not precooked and not fixed_weight else predicted
         if g<=0:continue
         factor=g/100; nk={}; kcal+=row['칼로리']*factor
         for key in nutrients:

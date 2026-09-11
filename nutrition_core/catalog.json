@@ -2472,6 +2472,20 @@
     "딸기 (Strawberry)",
     "수박 (Watermelon)"
   ],
+  "PREPARED_PUREE_ITEMS": [
+    "브로콜리 퓨레 (Broccoli)",
+    "토마토 퓨레 (Tomato)",
+    "우엉 퓨레 (Burdock Root)",
+    "청경채 퓨레 (Bok Choy)",
+    "단호박 퓨레 (Kabocha)",
+    "파프리카 퓨레 (Paprika)",
+    "샐러리 퓨레 (Celery)",
+    "당근 퓨레 (Carrot)",
+    "양배추 퓨레 (Cabbage)",
+    "배추 퓨레 (Napa Cabbage)",
+    "케일 퓨레 (Kale)",
+    "아스파라거스 퓨레 (Asparagus)"
+  ],
   "PRECOOKED_ITEMS": [
     "익힌 굴 (Oyster)",
     "익힌 홍합 (Green-Lipped Mussel)"
