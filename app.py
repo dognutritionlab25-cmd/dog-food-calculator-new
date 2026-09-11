@@ -2,7 +2,7 @@ from nutrition_core import basic_judgments
 from nutrition_core import energy_requirements
 import streamlit as st
 import pandas as pd
-from nutrition_ui import (PRECOOKED_ITEMS, FRUIT_RAW_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
+from nutrition_ui import (PRECOOKED_ITEMS, FRUIT_RAW_ITEMS, PREPARED_PUREE_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
     render_data_warnings, render_coverage, render_scope, render_cooking_policy, nutrient_value_text)
 
 st.set_page_config(page_title="반려견 영양 연구소 계산기 v6.2", layout="wide")
@@ -462,11 +462,12 @@ with tab_cooked:
     if c_selected:
         st.markdown("#### 재료 입력 중량 및 조리 후 예상 무게")
         for f in c_selected:
-            if f in FRUIT_RAW_ITEMS:
+            if f in FRUIT_RAW_ITEMS or f in PREPARED_PUREE_ITEMS:
                 raw_g = st.number_input(weight_label(f), 0, 1000, 50, step=5, key=f"craw_{f}")
                 c_amounts_raw[f] = raw_g
                 c_amounts_cooked[f] = raw_g
-                st.caption("생과일 급여량 그대로 사용 (조리 보정 없음)")
+                st.caption("생과일 급여량 그대로 사용 (조리 보정 없음)" if f in FRUIT_RAW_ITEMS
+                           else "완성 퓨레 급여량 그대로 사용 (추가 수율·실측 조리 중량 없음)")
                 continue
             row_f = food_df[food_df['재료명'] == f].iloc[0]
             cat_f = row_f['category']

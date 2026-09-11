@@ -3,9 +3,11 @@ from nutrition_core import catalog_data, retention, standards
 
 PRECOOKED_ITEMS = frozenset(catalog_data()["PRECOOKED_ITEMS"])
 FRUIT_RAW_ITEMS = frozenset(catalog_data()["FRUIT_RAW_ITEMS"])
+PREPARED_PUREE_ITEMS = frozenset(catalog_data()["PREPARED_PUREE_ITEMS"])
 WEIGHT_BASIS_NOTE = (
     "입력 기준: 익힌 굴·홍합은 익힌 상태의 중량을 사용합니다. 그 외 재료는 현재 계산의 "
-    "조리 전 기준 중량을 입력합니다. 과일 6종은 화식에서도 생과일 급여량 그대로 사용합니다. "
+    "조리 전 기준 중량을 입력합니다. 과일 6종은 화식에서도 생과일 급여량 그대로 사용하고, "
+    "퓨레 12종은 준비가 끝난 완성 퓨레의 급여량 그대로 사용합니다. "
     "사과는 껍질·씨·심, 바나나는 껍질, 딸기는 꼭지, 수박은 껍질·씨를 제외한 중량입니다."
 )
 
@@ -80,6 +82,7 @@ def render_cooking_policy(st, method):
     )
     st.caption(
         "과일 6종은 화식에서도 수율·보존율·실측 조리 중량을 적용하지 않습니다. "
+        "퓨레 12종은 완성 퓨레의 입력 중량을 그대로 사용하며 수율·실측 조리 중량을 적용하지 않습니다. "
         "그 외 veggie 그룹은 영양소 보존율을 적용하지 않고 예상 중량에만 수율을 적용합니다. "
         "익힌 굴·홍합은 수율과 보존율을 모두 추가 적용하지 않습니다. "
         "실제 조리 후 중량 입력은 중량 표시에만 반영됩니다."
