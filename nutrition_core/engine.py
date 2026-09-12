@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-ENGINE_VERSION = '1.3.0-cooked-input-weight-basis'
+ENGINE_VERSION = '1.3.1-cooked-input-raw-equivalent'
 _DATA = json.loads(Path(__file__).with_name('catalog.json').read_text())
 
 def canonical_json(value):
@@ -32,7 +32,7 @@ _POLICY = {
     'prepared_puree_cooking':'finished puree input grams; no yield or actual cooked weight override; existing nutrient calculations unchanged',
     'weight_basis_modes':{
         'raw_input':'legacy pre-cooking input grams; existing cooking yield and retention policy',
-        'cooked_input':'actual cooked serving grams; no additional cooking yield or actual cooked weight override; existing retention policy unchanged',
+        'cooked_input':'actual cooked serving grams; nutrient base is input grams divided by existing cooking yield, then existing retention policy; no actual cooked weight override',
     },
     'new_fruit_missing':'null contribution; registered subtotal plus nutrient_missing coverage; judgment unavailable',
     'standards':{
@@ -103,6 +103,9 @@ def _weight_application(item,row,cooked,method,weight_basis_mode):
     actual=item.get('actual_cooked_g')
     if actual is not None:actual=number(actual,'actual cooked grams')
     cooked_input=cooked and weight_basis_mode=='cooked_input'
+    yield_ratio=_DATA['COOKING_YIELD'][method][cat] if cooked and not precooked and not fixed_weight else 1.
+    if yield_ratio<=0:raise ValueError('Cooking yield must be positive')
+    nutrition_base_g=g/yield_ratio if cooked_input and not precooked and not fixed_weight else g
     predicted=g if not cooked or precooked or fixed_weight or cooked_input else round(g*_DATA['COOKING_YIELD'][method][cat])
     if cooked and actual is not None and not precooked and not fixed_weight and not cooked_input:
         applied=actual
@@ -115,7 +118,7 @@ def _weight_application(item,row,cooked,method,weight_basis_mode):
         elif prepared_puree:basis='완성 퓨레'
         elif cooked_input:basis='익힌 실제 무게'
         else:basis='조리 전 재료 무게'
-    return {'input_grams':g,'applied_grams':applied,'input_basis':basis}
+    return {'input_grams':g,'applied_grams':applied,'nutrition_base_grams':nutrition_base_g,'input_basis':basis}
 
 def weight_applications(request):
     """Return display-only input/applied weights using the same engine path as calculate()."""
@@ -166,7 +169,7 @@ def calculate(request,profile='review'):
         grams_total+=g
         cooked_total+=applied_weight['applied_grams']
         if g<=0:continue
-        factor=g/100; nk={}; kcal+=row['칼로리']*factor
+        factor=applied_weight['nutrition_base_grams']/100; nk={}; kcal+=row['칼로리']*factor
         for key in nutrients:
             field=key if key in row else key.split('(')[0]
             if raw_fruit and row[field] is None:
