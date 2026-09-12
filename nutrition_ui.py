@@ -30,9 +30,9 @@ def render_weight_basis_selector(st, key):
         key=key,
     )
     if WEIGHT_BASIS_OPTIONS[label] == "raw_input":
-        st.caption("생고기·생내장 등 조리 전 무게를 입력합니다. 앱에서 기존 조리수율을 반영합니다.")
+        st.caption("생고기·생내장 등 조리 전 무게를 입력합니다.")
     else:
-        st.caption("시판 화식이나 이미 조리가 끝난 음식의 실제 무게를 입력합니다. 추가 조리수율을 적용하지 않습니다.")
+        st.caption("시판 화식이나 이미 조리가 끝난 음식의 실제 급여 무게를 입력합니다.")
     st.caption("퓨레·과일·이미 익힌 재료는 실제 급여한 무게를 입력합니다.")
     return WEIGHT_BASIS_OPTIONS[label]
 
