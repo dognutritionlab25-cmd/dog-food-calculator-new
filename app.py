@@ -2,8 +2,8 @@ from nutrition_core import basic_judgments
 from nutrition_core import energy_requirements
 import streamlit as st
 import pandas as pd
-from nutrition_ui import (PRECOOKED_ITEMS, FRUIT_RAW_ITEMS, PREPARED_PUREE_ITEMS, WEIGHT_BASIS_NOTE, weight_label,
-    render_data_warnings, render_coverage, render_scope, render_cooking_policy, nutrient_value_text)
+from nutrition_ui import (PRECOOKED_ITEMS, FRUIT_RAW_ITEMS, PREPARED_PUREE_ITEMS, weight_label,
+    render_data_warnings, render_coverage, render_weight_basis_selector, nutrient_value_text)
 
 st.set_page_config(page_title="반려견 영양 연구소 계산기 v6.2", layout="wide")
 st.title("🐶 반려견 영양 연구소 [영양 계산기 v6.2]")
@@ -115,7 +115,6 @@ with tab_raw:
                                    supplements={"kelp_enabled": use_kelp, "iodine_mcg": _kelp_iodine})
         _raw_result = calculate(raw_request, "calculator")
         render_data_warnings(st, _raw_result)
-        render_scope(st, "calculator")
         total_grams = _raw_result["input_grams"]
         mass_breakdown = _raw_result["mass"]
         total_stats = _raw_result["nutrients"]
@@ -408,10 +407,7 @@ with tab_raw:
 # 화식 탭
 # ════════════════════════════════════════════════════════════════════════════
 with tab_cooked:
-    st.caption(
-        "⚠️ **화식 계산 안내**: 조리 과정에서 발생하는 수분 변화와 일부 영양소 손실을 반영한 **추정치**입니다. "
-        "실제 보존율은 재료의 종류, 조리 시간, 온도, 물 사용 여부에 따라 달라질 수 있습니다."
-    )
+    c_weight_basis_mode = render_weight_basis_selector(st, "c_weight_basis_mode")
 
     # ── 강아지 정보 ──────────────────────────────────────────────────────────
     cw1, cw2 = st.columns([1, 2])
@@ -443,7 +439,6 @@ with tab_cooked:
             horizontal=True,
             key="cooking_method"
         )
-        render_cooking_policy(st, cooking_method)
 
     st.divider()
 
@@ -452,52 +447,17 @@ with tab_cooked:
     cooked_foods = food_df[food_df['category'] != 'bone']['재료명'].tolist()
     c_selected = st.multiselect("재료를 선택하세요 (뼈고기 제외)", cooked_foods, key="c_selected")
     st.caption("💡 화식에서는 뼈를 익히면 안 됩니다. 칼슘은 아래 보충제로 공급하세요.")
-    st.caption(WEIGHT_BASIS_NOTE)
 
-    # ── 급여량 + 조리 수율 ────────────────────────────────────────────────────
-    c_amounts_raw = {}   # 생고기 입력값
-    c_amounts_cooked = {}  # 조리 후 실제 계산에 쓸 값
-    c_actual_weights = {}
+    # ── 급여량 ────────────────────────────────────────────────────────────────
+    c_amounts_raw = {}
+    c_actual_weights = {}  # 새 UI에서는 사용하지 않으며 과거 테스트/상태와의 호환용입니다.
 
     if c_selected:
-        st.markdown("#### 재료 입력 중량 및 조리 후 예상 무게")
-        for f in c_selected:
-            if f in FRUIT_RAW_ITEMS or f in PREPARED_PUREE_ITEMS:
-                raw_g = st.number_input(weight_label(f), 0, 1000, 50, step=5, key=f"craw_{f}")
-                c_amounts_raw[f] = raw_g
-                c_amounts_cooked[f] = raw_g
-                st.caption("생과일 급여량 그대로 사용 (조리 보정 없음)" if f in FRUIT_RAW_ITEMS
-                           else "완성 퓨레 급여량 그대로 사용 (추가 수율·실측 조리 중량 없음)")
-                continue
-            row_f = food_df[food_df['재료명'] == f].iloc[0]
-            cat_f = row_f['category']
-            yield_key = cat_f
-            yield_ratio = COOKING_YIELD[cooking_method].get(yield_key, 0.85)
-
-            fc1, fc2, fc3, fc4 = st.columns([3, 2, 2, 2])
-            is_precooked = f in PRECOOKED_ITEMS
-            with fc1:
-                raw_label = weight_label(f)
-                raw_g = st.number_input(raw_label, 0, 1000, 50, step=5, key=f"craw_{f}")
-                c_amounts_raw[f] = raw_g
-            with fc2:
-                if is_precooked:
-                    auto_cooked = raw_g  # 이미 익힌 상태 — 추가 수율 손실 없음
-                    st.caption("이미 익힌 상태 그대로 사용")
-                else:
-                    auto_cooked = round(raw_g * yield_ratio)
-                    st.metric("예상 조리 후", f"{auto_cooked}g", delta=f"수율 {int(yield_ratio*100)}%")
-            with fc3:
-                st.caption("☑ 조리 후 실제 무게를 알면 체크해서 입력하세요.")
-                use_actual = st.checkbox("실제 무게 직접 입력", key=f"cactual_chk_{f}", disabled=is_precooked)
-            with fc4:
-                if use_actual:
-                    actual_g = st.number_input("실제 조리 후 (g)", 0, 1000, auto_cooked, step=1, key=f"cactual_{f}")
-                    c_amounts_cooked[f] = actual_g
-                    c_actual_weights[f] = actual_g
-                else:
-                    c_amounts_cooked[f] = raw_g  # 영양 계산은 생고기 기준
-                    c_actual_weights[f] = auto_cooked
+        st.markdown("#### 재료별 무게")
+        amount_columns = st.columns(3)
+        for index, f in enumerate(c_selected):
+            with amount_columns[index % 3]:
+                c_amounts_raw[f] = st.number_input(weight_label(f), 0, 1000, 50, step=5, key=f"craw_{f}")
 
     # ── 칼슘 보충제 ──────────────────────────────────────────────────────────
     st.divider()
@@ -536,15 +496,15 @@ with tab_cooked:
         st.divider()
         cooked_request = make_request(c_amounts_raw, cooked=True, method=cooking_method,
             weight=c_weight, activity=c_activity, calcium=total_ca_supplement,
-            actual_weights=c_actual_weights,
+            weight_basis_mode=c_weight_basis_mode,
             supplements={"eggshell_enabled": use_eggshell, "eggshell_g": eggshell_g,
                          "eggshell_ca_mg_per_g": eggshell_ca_per_g, "calcium_enabled": use_ca_sup,
                          "calcium_g": ca_sup_g, "calcium_mg_per_g": ca_sup_mg_per_g},
-            original_fields={"raw_amounts": dict(c_amounts_raw), "actual_weight_selection": {
-                f: bool(st.session_state.get("cactual_chk_" + f, False)) for f in c_selected}})
+            original_fields={"raw_amounts": dict(c_amounts_raw),
+                             "actual_weight_selection": {},
+                             "weight_basis_mode": c_weight_basis_mode})
         _cooked_result = calculate(cooked_request, "calculator")
         render_data_warnings(st, _cooked_result)
-        render_scope(st, "calculator")
         c_total_grams_raw = _cooked_result["input_grams"]
         c_total_grams_cooked = _cooked_result["cooked_grams"]
         c_mass_breakdown = _cooked_result["mass"]
@@ -561,7 +521,7 @@ with tab_cooked:
             with rc1:
                 st.subheader("⚖️ 식단 비율")
                 st.metric("재료 입력 총량", f"{c_total_grams_raw:.0f}g")
-                st.metric("조리 후 총량 (실측 입력 또는 예상)", f"{c_total_grams_cooked:.0f}g")
+                st.metric("현재 계산 적용 총량", f"{c_total_grams_cooked:.0f}g")
                 if c_total_grams_raw > 0:
                     pm = c_mass_breakdown['muscle_meat'] / c_total_grams_raw * 100
                     po = c_mass_breakdown['organ']       / c_total_grams_raw * 100
