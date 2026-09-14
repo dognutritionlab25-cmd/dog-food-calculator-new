@@ -7,7 +7,7 @@ import json
 import math
 from pathlib import Path
 
-ENGINE_VERSION = '1.4.0-fish-source-aligned'
+ENGINE_VERSION = '1.5.0-fish-amino-source-aligned'
 _DATA = json.loads(Path(__file__).with_name('catalog.json').read_text())
 
 def canonical_json(value):
@@ -16,7 +16,7 @@ def canonical_json(value):
 def digest(value):
     return hashlib.sha256(canonical_json(value).encode()).hexdigest()
 
-FOOD_DB_VERSION = 'food-' + digest({k:_DATA[k] for k in ['db_data','omega_db','amino_db','amino_name_map','FRUIT_RAW_ITEMS','PREPARED_PUREE_ITEMS','FISH_SOURCE_METADATA']})[:16]
+FOOD_DB_VERSION = 'food-' + digest({k:_DATA[k] for k in ['db_data','omega_db','amino_db','amino_name_map','FRUIT_RAW_ITEMS','PREPARED_PUREE_ITEMS','FISH_SOURCE_METADATA','AMINO_SOURCE_METADATA']})[:16]
 ENGINE_SOURCE_HASH = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 _POLICY = {
     'version':'stage1-legacy-effective-v1',

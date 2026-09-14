@@ -223,18 +223,44 @@
       "히스티딘": 415,
       "아르기닌": 800
     },
+    "연어(MEXT10144)": {
+      "류신": 1500,
+      "이소류신": 900,
+      "발린": 1100,
+      "페닐알라닌": 810,
+      "티로신": 710,
+      "트레오닌": 1000,
+      "메티오닌": 590,
+      "리신": 1800,
+      "트립토판": 230,
+      "히스티딘": 540,
+      "아르기닌": 1300
+    },
+    "고등어(MEXT10154)": {
+      "류신": 1600,
+      "이소류신": 960,
+      "발린": 1100,
+      "페닐알라닌": 840,
+      "티로신": 710,
+      "트레오닌": 1000,
+      "메티오닌": 690,
+      "리신": 1800,
+      "트립토판": 230,
+      "히스티딘": 1300,
+      "아르기닌": 1200
+    },
     "정어리(생)": {
-      "류신": 2001,
-      "이소류신": 1134,
-      "발린": 1268,
-      "페닐알라닌": 961,
-      "티로신": 783,
-      "트레오닌": 1079,
-      "메티오닌": 729,
-      "리신": 2260,
-      "트립토판": 276,
-      "히스티딘": 725,
-      "아르기닌": 1473
+      "류신": 1500,
+      "이소류신": 910,
+      "발린": 1000,
+      "페닐알라닌": 800,
+      "티로신": 670,
+      "트레오닌": 950,
+      "메티오닌": 570,
+      "리신": 1800,
+      "트립토판": 220,
+      "히스티딘": 1000,
+      "아르기닌": 1100
     },
     "계란노른자(생)": {
       "류신": 1200,
@@ -269,8 +295,8 @@
     "말고기 (Horse Meat)": "말고기(lean,생)",
     "사슴고기 (Venison)": "사슴고기(lean,생)",
     "정어리 (Sardine, 생/생식용)": "정어리(생)",
-    "정어리 (Sardine, 뼈제외/가식부/화식용)": "정어리(생)",
-    "정어리 (Sardine, 전체/뼈포함/무염통조림/화식용)": "정어리(생)",
+    "정어리 (Sardine, 뼈제외/가식부/화식용)": null,
+    "정어리 (Sardine, 전체/뼈포함/무염통조림/화식용)": null,
     "계란노른자 (Egg Yolk)": "계란노른자(생)",
     "소간 (Beef Liver)": "소간(생)",
     "닭간 (Chicken Liver)": "닭간(생)",
@@ -310,7 +336,7 @@
     "토끼고기 (Rabbit)": null,
     "치아씨드 (Chia Seeds)": null,
     "메추리알 (Quail Egg)": null,
-    "연어 (Salmon)": null,
+    "연어 (Salmon)": "연어(MEXT10144)",
     "양배추 퓨레 (Cabbage)": null,
     "배추 퓨레 (Napa Cabbage)": null,
     "소목뼈 (Beef Neck Bone, 뼈 37%)": null,
@@ -322,7 +348,7 @@
     "크랜베리 (Cranberry)": null,
     "케일 퓨레 (Kale)": null,
     "아스파라거스 퓨레 (Asparagus)": null,
-    "고등어 (Mackerel)": null,
+    "고등어 (Mackerel)": "고등어(MEXT10154)",
     "익힌 굴 (Oyster)": null,
     "익힌 홍합 (Green-Lipped Mussel)": null
   },
@@ -2626,6 +2652,66 @@
         {"code":"22:5 n-3","source_name":"ドコサペンタエン酸","family":"n3","amount":170,"source_amount_text":"170","unit":"mg/100g edible portion","status":"reported_numeric"},
         {"code":"22:6 n-3","source_name":"ドコサヘキサエン酸","family":"n3","amount":870,"source_amount_text":"870","unit":"mg/100g edible portion","status":"reported_numeric"}
       ]
+    }
+  },
+  "AMINO_SOURCE_METADATA": {
+    "연어(MEXT10144)": {
+      "database": "MEXT Standard Tables of Food Composition in Japan",
+      "source_id": "10144",
+      "species": "Salmo salar",
+      "food_description": "Atlantic salmon, cultured/farmed, raw, skin-on",
+      "state": "RAW",
+      "basis": "edible portion per 100 g",
+      "unit": "mg/100 g",
+      "normalization": "identity",
+      "source_url": "https://fooddb.mext.go.jp/details/details.pl?ITEM_NO=10_10144_7&MODE=1",
+      "source_native_values": {
+        "cystine_mg": 210,
+        "methionine_plus_cystine_mg": 810,
+        "phenylalanine_plus_tyrosine_mg": 1500,
+        "amino_acids_total_mg": 20000,
+        "protein_g": 20.1,
+        "protein_by_amino_acid_composition_g": 17.3
+      }
+    },
+    "고등어(MEXT10154)": {
+      "database": "MEXT Standard Tables of Food Composition in Japan",
+      "source_id": "10154",
+      "species": "Scomber japonicus",
+      "food_description": "Chub mackerel, raw",
+      "state": "RAW",
+      "basis": "edible portion per 100 g",
+      "unit": "mg/100 g",
+      "normalization": "identity",
+      "source_url": "https://fooddb.mext.go.jp/details/details.pl?ITEM_NO=10_10154_7&MODE=1",
+      "source_native_values": {
+        "cystine_mg": 220,
+        "methionine_plus_cystine_mg": 910,
+        "phenylalanine_plus_tyrosine_mg": 1600,
+        "amino_acids_total_mg": 21000,
+        "protein_g": 20.6,
+        "protein_by_amino_acid_composition_g": 17.8,
+        "audit_note": "MEXT source-native amino-acids-total is 0.4 g above general protein; individual values are not rescaled."
+      }
+    },
+    "정어리(생)": {
+      "database": "MEXT Standard Tables of Food Composition in Japan",
+      "source_id": "10047",
+      "species": "Sardinops melanostictus",
+      "food_description": "Japanese pilchard, raw",
+      "state": "RAW",
+      "basis": "edible portion per 100 g",
+      "unit": "mg/100 g",
+      "normalization": "identity",
+      "source_url": "https://fooddb.mext.go.jp/details/details.pl?ITEM_NO=10_10047_7&MODE=1",
+      "source_native_values": {
+        "cystine_mg": 190,
+        "methionine_plus_cystine_mg": 760,
+        "phenylalanine_plus_tyrosine_mg": 1500,
+        "amino_acids_total_mg": 19000,
+        "protein_g": 19.2,
+        "protein_by_amino_acid_composition_g": 16.4
+      }
     }
   },
   "FRUIT_RAW_ITEMS": [
