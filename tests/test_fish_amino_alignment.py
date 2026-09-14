@@ -36,7 +36,7 @@ class FishAminoAlignmentTests(unittest.TestCase):
         self.assertEqual(mapping['연어 (Salmon)'], '연어(MEXT10144)')
         self.assertEqual(mapping['고등어 (Mackerel)'], '고등어(MEXT10154)')
         self.assertEqual(mapping['정어리 (Sardine, 생/생식용)'], '정어리(생)')
-        self.assertIsNone(mapping['정어리 (Sardine, 뼈제외/가식부/화식용)'])
+        self.assertNotIn('정어리 (Sardine, 뼈제외/가식부/화식용)', mapping)
         self.assertIsNone(mapping['정어리 (Sardine, 전체/뼈포함/무염통조림/화식용)'])
 
     def test_source_metadata_is_separate_and_exact(self):
@@ -62,7 +62,7 @@ class FishAminoAlignmentTests(unittest.TestCase):
                 self.assertNotIn(food, result['coverage']['amino_missing'])
 
     def test_nonraw_sardines_are_unregistered_for_amino_coverage(self):
-        for food in ('정어리 (Sardine, 뼈제외/가식부/화식용)', '정어리 (Sardine, 전체/뼈포함/무염통조림/화식용)'):
+        for food in ('정어리 (Sardine, 전체/뼈포함/무염통조림/화식용)',):
             with self.subTest(food=food):
                 result = calculate(make_request({food: 100}, cooked=True, method='삶기'), 'review')
                 self.assertIn(food, result['coverage']['amino_missing'])
@@ -96,7 +96,7 @@ class FishAminoAlignmentTests(unittest.TestCase):
                 self.assertEqual(row['input_basis'], expected_basis)
 
     def test_food_db_version_hash_includes_amino_metadata(self):
-        keys = ['db_data', 'omega_db', 'amino_db', 'amino_name_map', 'FRUIT_RAW_ITEMS', 'PREPARED_PUREE_ITEMS', 'FISH_SOURCE_METADATA', 'AMINO_SOURCE_METADATA']
+        keys = ['db_data', 'omega_db', 'amino_db', 'amino_name_map', 'FRUIT_RAW_ITEMS', 'PREPARED_PUREE_ITEMS', 'FISH_SOURCE_METADATA', 'AMINO_SOURCE_METADATA', 'OMEGA_SOURCE_METADATA', 'LEGACY_FOOD_ALIASES', 'LEGACY_SNAPSHOT_FOODS']
         expected = 'food-' + digest({key: _DATA[key] for key in keys})[:16]
         self.assertEqual(FOOD_DB_VERSION, expected)
 
